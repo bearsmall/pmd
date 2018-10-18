@@ -4,6 +4,7 @@
 
 package net.sourceforge.pmd.processor;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
@@ -13,6 +14,7 @@ import java.util.concurrent.Executors;
 
 import net.sourceforge.pmd.PMDConfiguration;
 import net.sourceforge.pmd.Report;
+import net.sourceforge.pmd.RuleViolation;
 import net.sourceforge.pmd.renderers.Renderer;
 
 
@@ -43,7 +45,12 @@ public class MultiThreadProcessor extends AbstractPMDProcessor {
         try {
             for (int i = 0; i < submittedTasks; i++) {
                 final Report report = completionService.take().get();
-                super.renderReports(renderers, report);
+                Iterator<RuleViolation> violations = report.iterator();
+                while (violations.hasNext()) {
+                    RuleViolation rv = violations.next();
+                    System.out.println(rv);
+                }
+                //super.renderReports(renderers, report);
             }
         } catch (final InterruptedException ie) {
             Thread.currentThread().interrupt();
