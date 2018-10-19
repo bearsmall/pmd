@@ -4,7 +4,7 @@ permalink: pmd_release_notes.html
 keywords: changelog, release notes
 ---
 
-# {{ site.pmd.date }} - {{ site.pmd.version }}
+## {{ site.pmd.date }} - {{ site.pmd.version }}
 
 The PMD team is pleased to announce PMD {{ site.pmd.version }}.
 
@@ -14,81 +14,44 @@ This is a {{ site.pmd.release_type }} release.
 
 ### New and noteworthy
 
-#### New Rules
+#### Improved Golang CPD Support
 
-*   The new Java rule {% rule java/codestyle/LinguisticNaming %} (`java-codestyle`)
-    detects cases, when a method name indicates it returns a boolean (such as `isSmall()`) but it doesn't.
-    Besides method names, the rule also checks field and variable names. It also checks, that getters return
-    something but setters won't. The rule has several properties with which it can be customized.
-
-*   The new PL/SQL rule {% rule plsql/codestyle/ForLoopNaming %} (`plsql-codestyle`)
-    enforces a naming convention for "for loops". Both "cursor for loops" and "index for loops" are covered.
-    The rule can be customized via patterns. By default, short variable names are reported.
-
-*   The new Java rule {% rule java/codestyle/FieldNamingConventions %} (`java-codestyle`)
-    detects field names that don't comply to a given convention. It defaults to standard Java convention of using camelCase,
-    but can be configured with ease for e.g. constants or static fields.
-
-*   The new Apex rule {% rule apex/codestyle/OneDeclarationPerLine %} (`apex-codestyle`) enforces declaring a
-    single field / variable per line; or per statement if the `strictMode` property is set.
-    It's an Apex equivalent of the already existing Java rule of the same name.
+Thanks to the work of [ITBA](https://www.itba.edu.ar/) students [Matías Fraga](https://github.com/matifraga),
+[Tomi De Lucca](https://github.com/tomidelucca) and [Lucas Soncini](https://github.com/lsoncini),
+Golang is now backed by a proper Antlr Grammar. This means CPD is now better at detecting duplicates,
+as comments are recognized as such and ignored.
 
 ### Fixed Issues
 
-*   core
-    *   [#1191](https://github.com/pmd/pmd/issues/1191): \[core] Test Framework: Sort violations by line/column
-    *   [#1283](https://github.com/pmd/pmd/issues/1283): \[core] Deprecate ReportTree
-    *   [#1288](https://github.com/pmd/pmd/issues/1288): \[core] No supported build listeners found with Gradle
-    *   [#1300](https://github.com/pmd/pmd/issues/1300): \[core] PMD stops processing file completely, if one rule in a rule chain fails
+*   all
+    *   [#1272](https://github.com/pmd/pmd/issues/1272): \[core] Could not find or load main class when using symlinked run.sh
+    *   [#1377](https://github.com/pmd/pmd/issues/1377): \[core] LanguageRegistry uses default class loader when invoking ServiceLocator 
+*   java
+    *   [#1330](https://github.com/pmd/pmd/issues/1330): \[java] PMD crashes with java.lang.ClassFormatError: Absent Code attribute in method that is not native or abstract in class file javax/xml/ws/Service
 *   java-bestpractices
-    *   [#940](https://github.com/pmd/pmd/issues/940): \[java] JUnit 4 false positives for JUnit 5 tests
-    *   [#1267](https://github.com/pmd/pmd/pull/1267): \[java] MissingOverrideRule: Avoid NoClassDefFoundError with incomplete classpath
+    *   [#1202](https://github.com/pmd/pmd/issues/1202): \[java] GuardLogStatement: "There is log block not surrounded by if" doesn't sound right
+    *   [#1365](https://github.com/pmd/pmd/issues/1365): \[java] JUnitTestsShouldIncludeAssert false positive
 *   java-codestyle
-    *   [#1255](https://github.com/pmd/pmd/issues/1255): \[java] UnnecessaryFullyQualifiedName false positive: static method on shadowed implicitly imported class
-    *   [#1258](https://github.com/pmd/pmd/issues/1285): \[java] False positive "UselessParentheses" for parentheses that contain assignment
-*   java-errorprone
-    *   [#1078](https://github.com/pmd/pmd/issues/1078): \[java] MissingSerialVersionUID rule does not seem to catch inherited classes
-*   java-performance
-    *   [#1291](https://github.com/pmd/pmd/issues/1291): \[java] InvalidSlf4jMessageFormat false positive: too many arguments with string concatenation operator
-    *   [#1298](https://github.com/pmd/pmd/issues/1298): \[java] RedundantFieldInitializer - NumberFormatException with Long
-*   jsp
-    *   [#1274](https://github.com/pmd/pmd/issues/1274): \[jsp] Support EL in tag attributes
-    *   [#1276](https://github.com/pmd/pmd/issues/1276): \[jsp] add support for jspf and tag extensions
-*   plsql
-    *   [#681](https://github.com/pmd/pmd/issues/681): \[plsql] Parse error with Cursor For Loop
+    *   [#1199](https://github.com/pmd/pmd/issues/1199): \[java] UnnecessaryFullyQualifiedName doesn't flag same package FQCNs
+    *   [#1356](https://github.com/pmd/pmd/issues/1356): \[java] UnnecessaryModifier wrong message public-\>static
+*   java-design
+    *   [#1369](https://github.com/pmd/pmd/issues/1369): \[java] Processing error (ClassCastException) if a TYPE\_USE annotation is used on a base class in the "extends" clause
 
 ### API Changes
 
-*   All classes in the package `net.sourceforge.pmd.lang.dfa.report` have been deprecated and will be removed
-    with PMD 7.0.0. This includes the class `net.sourceforge.pmd.lang.dfa.report.ReportTree`. The reason is,
-    that this class is very specific to Java and not suitable for other languages. It has only been used for
-    `YAHTMLRenderer`, which has been rewritten to work without these classes.
-    
-*   The nodes RUNSIGNEDSHIFT and RSIGNEDSHIFT are deprecated and will be removed from the AST with PMD 7.0.0.
-    These represented the operator of ShiftExpression in two cases out of three, but they're not needed and
-    make ShiftExpression inconsistent. The operator of a ShiftExpression is now accessible through
-    ShiftExpression#getOperator.
-
-#### Deprecated rules
-
-*   The Java rules {% rule java/codestyle/VariableNamingConventions %}, {% rule java/codestyle/MIsLeadingVariableName %},
-    {% rule java/codestyle/SuspiciousConstantFieldName %}, and {% rule java/codestyle/AvoidPrefixingMethodParameters %} are 
-    now deprecated, and will be removed with version 7.0.0. They are replaced by the more general
-    {% rule java/codestyle/FieldNamingConventions %}, {% rule java/codestyle/FormalParameterNamingConventions %}, and
-    {% rule java/codestyle/LocalVariableNamingConventions %}.
-
 ### External Contributions
 
-*   [#109](https://github.com/pmd/pmd/pull/109): \[java] Add two linguistics rules under naming - [Arda Aslan](https://github.com/ardaasln)
-*   [#1254](https://github.com/pmd/pmd/pull/1254): \[ci] \[GSoC] Integrating the danger and pmdtester to travis CI - [BBG](https://github.com/djydewang)
-*   [#1258](https://github.com/pmd/pmd/pull/1258): \[java] Use typeof in MissingSerialVersionUID - [krichter722](https://github.com/krichter722)
-*   [#1264](https://github.com/pmd/pmd/pull/1264): \[cpp] Fix NullPointerException in CPPTokenizer:99 - [Rafael Cortês](https://github.com/mrfyda)
-*   [#1277](https://github.com/pmd/pmd/pull/1277): \[jsp] #1276 add support for jspf and tag extensions - [Jordi Llach](https://github.com/jordillachmrf)
-*   [#1275](https://github.com/pmd/pmd/pull/1275): \[jsp] Issue #1274 - Support EL in tag attributes - [Jordi Llach](https://github.com/jordillachmrf)
-*   [#1278](https://github.com/pmd/pmd/pull/1278): \[ci] \[GSoC] Use pmdtester 1.0.0.pre.beta3 - [BBG](https://github.com/djydewang)
-*   [#1289](https://github.com/pmd/pmd/pull/1289): \[java] UselessParentheses: Fix false positive with assignments - [cobratbq](https://github.com/cobratbq)
-*   [#1290](https://github.com/pmd/pmd/pull/1290): \[docs] \[GSoC] Create the documentation about pmdtester - [BBG](https://github.com/djydewang)
-*   [#1256](https://github.com/pmd/pmd/pull/1256): \[java] #940 Avoid JUnit 4 false positives for JUnit 5 tests - [Alex Shesterov](https://github.com/vovkss)
-*   [#1315](https://github.com/pmd/pmd/pull/1315): \[apex] Add OneDeclarationPerStatement rule - [Jeff Hube](https://github.com/jeffhube) 
+*   [#1338](https://github.com/pmd/pmd/pull/1338): \[core] [cpd] Generalize ANTLR tokens preparing support for ANTLR token filter - [Matías Fraga](https://github.com/matifraga) and [Tomi De Lucca](https://github.com/tomidelucca)
+*   [#1366](https://github.com/pmd/pmd/pull/1366): \[java] Static Modifier on Internal Interface pmd #1356 - [avishvat](https://github.com/vishva007)
+*   [#1368](https://github.com/pmd/pmd/pull/1368): \[doc] Updated outdated note in the building documentation. - [Maikel Steneker](https://github.com/maikelsteneker)
+*   [#1374](https://github.com/pmd/pmd/pull/1374): \[java] Simplify check for 'Test' annotation in JUnitTestsShouldIncludeAssertRule. - [Will Winder](https://github.com/winder)
+*   [#1375](https://github.com/pmd/pmd/pull/1375): \[java] Add missing null check AbstractJavaAnnotatableNode - [Will Winder](https://github.com/winder)
+*   [#1376](https://github.com/pmd/pmd/pull/1376): \[all] Upgrading Apache Commons IO from 2.4 to 2.6 - [Thunderforge](https://github.com/Thunderforge)
+*   [#1378](https://github.com/pmd/pmd/pull/1378): \[all] Upgrading Apache Commons Lang 3 from 3.7 to 3.8.1 - [Thunderforge](https://github.com/Thunderforge)
+*   [#1382](https://github.com/pmd/pmd/pull/1382): \[all] Replacing deprecated IO methods with ones that specify a charset - [Thunderforge](https://github.com/Thunderforge)
+*   [#1383](https://github.com/pmd/pmd/pull/1383): \[java] Improved message for GuardLogStatement rule - [Felix Lampe](https://github.com/fblampe)
+*   [#1386](https://github.com/pmd/pmd/pull/1386): \[go] [cpd] Add CPD support for Antlr based grammar on Golang - [Matías Fraga](https://github.com/matifraga)
+*   [#1398](https://github.com/pmd/pmd/pull/1398): \[all] Upgrading SLF4J from 1.7.12 to 1.7.25 - [Thunderforge](https://github.com/Thunderforge)
 
 {% endtocmaker %}
+

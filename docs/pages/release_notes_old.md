@@ -6,6 +6,264 @@ permalink: pmd_release_notes_old.html
 Previous versions of PMD can be downloaded here:
 http://sourceforge.net/projects/pmd/files/pmd/
 
+## 30-September-2018 - 6.8.0
+
+The PMD team is pleased to announce PMD 6.8.0.
+
+This is a minor release.
+
+### Table Of Contents
+
+* [New and noteworthy](#new-and-noteworthy)
+    * [Drawing a line between private and public API](#drawing-a-line-between-private-and-public-api)
+            * [`.internal` packages and `@InternalApi` annotation](#`.internal`-packages-and-`@internalapi`-annotation)
+            * [`@ReservedSubclassing`](#`@reservedsubclassing`)
+            * [`@Experimental`](#`@experimental`)
+            * [`@Deprecated`](#`@deprecated`)
+            * [The transition](#the-transition)
+    * [Quickstart Ruleset](#quickstart-ruleset)
+    * [New Rules](#new-rules)
+    * [Modified Rules](#modified-rules)
+    * [PLSQL](#plsql)
+* [Fixed Issues](#fixed-issues)
+* [API Changes](#api-changes)
+* [External Contributions](#external-contributions)
+
+### New and noteworthy
+
+#### Drawing a line between private and public API
+
+Until now, all released public members and types were implicitly considered part
+of PMD's public API, including inheritance-specific members (protected members, abstract methods).
+We have maintained those APIs with the goal to preserve full binary compatibility between minor releases,
+only breaking those APIs infrequently, for major releases.
+
+In order to allow PMD to move forward at a faster pace, this implicit contract will
+be invalidated with PMD 7.0.0. We now introduce more fine-grained distinctions between
+the type of compatibility support we guarantee for our libraries, and ways to make
+them explicit to clients of PMD.
+
+###### `.internal` packages and `@InternalApi` annotation
+
+*Internal API* is meant for use *only* by the main PMD codebase. Internal types and methods
+may be modified in any way, or even removed, at any time.
+
+Any API in a package that contains an `.internal` segment is considered internal.
+The `@InternalApi` annotation will be used for APIs that have to live outside of
+these packages, e.g. methods of a public type that shouldn't be used outside of PMD (again,
+these can be removed anytime).
+
+###### `@ReservedSubclassing`
+
+Types marked with the `@ReservedSubclassing` annotation are only meant to be subclassed
+by classes within PMD. As such, we may add new abstract methods, or remove protected methods,
+at any time. All published public members remain supported. The annotation is *not* inherited, which
+means a reserved interface doesn't prevent its implementors to be subclassed.
+
+###### `@Experimental`
+
+APIs marked with the `@Experimental` annotation at the class or method level are subject to change.
+They can be modified in any way, or even removed, at any time. You should not use or rely
+ on them in any production code. They are purely to allow broad testing and feedback.
+
+###### `@Deprecated`
+
+APIs marked with the `@Deprecated` annotation at the class or method level will remain supported
+until the next major release but it is recommended to stop using them.
+
+###### The transition
+
+*All currently supported APIs will remain so until 7.0.0*. All APIs that are to be moved to
+`.internal` packages or hidden will be tagged `@InternalApi` before that major release, and
+the breaking API changes will be performed in 7.0.0.
+
+
+#### Quickstart Ruleset
+
+PMD 6.8.0 provides a first quickstart ruleset for Java, which you can use as a base ruleset to get your
+custom ruleset started. You can reference it with `rulesets/java/quickstart.xml`.
+You are strongly encouraged to [create your own ruleset](https://pmd.github.io/pmd-6.7.0/pmd_userdocs_making_rulesets.html)
+though.
+
+The quickstart ruleset has the intention, to be useful out-of-the-box for many projects. Therefore it
+references only rules, that are most likely to apply everywhere.
+
+Any feedback would be greatly appreciated.
+
+
+#### New Rules
+
+*   The new Apex rule [`ApexDoc`](https://pmd.github.io/pmd-6.8.0/pmd_rules_apex_documentation.html#apexdoc) (`apex-documentation`)
+    enforces the inclusion of ApexDoc on classes, interfaces, properties and methods; as well as some
+    sanity rules for such docs (no missing parameters, parameters' order, and return value). By default,
+    method overrides and test classes are allowed to not include ApexDoc.
+
+
+#### Modified Rules
+
+*   The rule [`MissingSerialVersionUID`](https://pmd.github.io/pmd-6.8.0/pmd_rules_java_errorprone.html#missingserialversionuid) (`java-errorprone`) has been modified
+    in order to recognize also missing `serialVersionUID` fields in abstract classes, if they are serializable.
+    Each individual class in the inheritance chain needs an own serialVersionUID field. See also [Should an abstract class have a serialVersionUID](https://stackoverflow.com/questions/893259/should-an-abstract-class-have-a-serialversionuid).
+    This change might lead to additional violations in existing code bases.
+
+
+#### PLSQL
+
+The grammar for PLSQL has been revamped in order to fully parse `SELECT INTO`, `UPDATE`, and `DELETE`
+statements. Previously such statements have been simply skipped ahead, now PMD is parsing them, giving access
+to the individual parts of a SELECT-statement, such as the Where-Clause. This might produce new parsing errors
+where PMD previously could successfully parse PLSQL code. If this happens, please report a new [issue](https://github.com/pmd/pmd/issues/new) to get this problem fixed.
+
+
+### Fixed Issues
+
+*   apex-bestpractices
+    *   [#1348](https://github.com/pmd/pmd/issues/1348): \[apex] AvoidGlobalModifierRule gives warning even when its a webservice - false positive
+*   java-codestyle
+    *   [#1329](https://github.com/pmd/pmd/issues/1329): \[java] FieldNamingConventions: false positive in serializable class with serialVersionUID
+    *   [#1334](https://github.com/pmd/pmd/issues/1334): \[java] LinguisticNaming should support AtomicBooleans
+*   java-errorprone
+    *   [#1350](https://github.com/pmd/pmd/issues/1350): \[java] MissingSerialVersionUID false-positive on interfaces
+    *   [#1352](https://github.com/pmd/pmd/issues/1352): \[java] MissingSerialVersionUID false-negative with abstract classes
+*   java-performance
+    *   [#1325](https://github.com/pmd/pmd/issues/1325): \[java] False positive in ConsecutiveLiteralAppends
+*   plsql
+    *   [#1279](https://github.com/pmd/pmd/pull/1279): \[plsql] Support for SELECT INTO
+
+
+### API Changes
+
+*   A couple of methods and fields in `net.sourceforge.pmd.properties.AbstractPropertySource` have been
+    deprecated, as they are replaced by already existing functionality or expose internal implementation
+    details: `propertyDescriptors`, `propertyValuesByDescriptor`,
+    `copyPropertyDescriptors()`, `copyPropertyValues()`, `ignoredProperties()`, `usesDefaultValues()`,
+    `useDefaultValueFor()`.
+
+*   Some methods in `net.sourceforge.pmd.properties.PropertySource` have been deprecated as well:
+    `usesDefaultValues()`, `useDefaultValueFor()`, `ignoredProperties()`.
+
+*   The class `net.sourceforge.pmd.lang.rule.AbstractDelegateRule` has been deprecated and will
+    be removed with PMD 7.0.0. It is internally only in use by RuleReference.
+
+*   The default constructor of `net.sourceforge.pmd.lang.rule.RuleReference` has been deprecated
+    and will be removed with PMD 7.0.0. RuleReferences should only be created by providing a Rule and
+    a RuleSetReference. Furthermore the following methods are deprecated: `setRuleReference()`,
+    `hasOverriddenProperty()`, `usesDefaultValues()`, `useDefaultValueFor()`.
+
+
+### External Contributions
+
+*   [#1309](https://github.com/pmd/pmd/pull/1309): \[core] \[CPD] Decouple Antlr Tokenizer implementation from any CPD language supported with Antlr - [Matías Fraga](https://github.com/matifraga)
+*   [#1314](https://github.com/pmd/pmd/pull/1314): \[apex] Add validation of ApexDoc comments - [Jeff Hube](https://github.com/jeffhube)
+*   [#1339](https://github.com/pmd/pmd/pull/1339): \[ci] Improve danger message - [BBG](https://github.com/djydewang)
+*   [#1340](https://github.com/pmd/pmd/pull/1340): \[java] Derive correct classname for non-public non-classes - [kris-scheibe](https://github.com/kris-scheibe)
+*   [#1357](https://github.com/pmd/pmd/pull/1357): \[doc] Improve Codacy description - [Daniel Reigada](https://github.com/DReigada)
+
+
+## 02-September-2018 - 6.7.0
+
+The PMD team is pleased to announce PMD 6.7.0.
+
+This is a minor release.
+
+### Table Of Contents
+
+* [New and noteworthy](#new-and-noteworthy)
+    *   [Modified Rules](#modified-rules)
+    *   [New Rules](#new-rules)
+    *   [Deprecated Rules](#deprecated-rules)
+* [Fixed Issues](#fixed-issues)
+* [API Changes](#api-changes)
+* [External Contributions](#external-contributions)
+
+### New and noteworthy
+
+#### Modified Rules
+
+*   The Java rule {% rule java/bestpractices/OneDeclarationPerLine %} (`java-bestpractices`) has been revamped to
+    consider not only local variable declarations, but field declarations too.
+
+#### New Rules
+
+*   The new Java rule {% rule java/codestyle/LinguisticNaming %} (`java-codestyle`)
+    detects cases, when a method name indicates it returns a boolean (such as `isSmall()`) but it doesn't.
+    Besides method names, the rule also checks field and variable names. It also checks, that getters return
+    something but setters won't. The rule has several properties with which it can be customized.
+
+*   The new PL/SQL rule {% rule plsql/codestyle/ForLoopNaming %} (`plsql-codestyle`)
+    enforces a naming convention for "for loops". Both "cursor for loops" and "index for loops" are covered.
+    The rule can be customized via patterns. By default, short variable names are reported.
+
+*   The new Java rule {% rule java/codestyle/FieldNamingConventions %} (`java-codestyle`)
+    detects field names that don't comply to a given convention. It defaults to standard Java convention of using camelCase,
+    but can be configured with ease for e.g. constants or static fields.
+
+*   The new Apex rule {% rule apex/codestyle/OneDeclarationPerLine %} (`apex-codestyle`) enforces declaring a
+    single field / variable per line; or per statement if the `strictMode` property is set.
+    It's an Apex equivalent of the already existing Java rule of the same name.
+
+#### Deprecated Rules
+
+*   The Java rules {% rule java/codestyle/VariableNamingConventions %}, {% rule java/codestyle/MIsLeadingVariableName %},
+    {% rule java/codestyle/SuspiciousConstantFieldName %}, and {% rule java/codestyle/AvoidPrefixingMethodParameters %} are 
+    now deprecated, and will be removed with version 7.0.0. They are replaced by the more general
+    {% rule java/codestyle/FieldNamingConventions %}, {% rule java/codestyle/FormalParameterNamingConventions %}, and
+    {% rule java/codestyle/LocalVariableNamingConventions %}.
+
+### Fixed Issues
+
+*   core
+    *   [#1191](https://github.com/pmd/pmd/issues/1191): \[core] Test Framework: Sort violations by line/column
+    *   [#1283](https://github.com/pmd/pmd/issues/1283): \[core] Deprecate ReportTree
+    *   [#1288](https://github.com/pmd/pmd/issues/1288): \[core] No supported build listeners found with Gradle
+    *   [#1300](https://github.com/pmd/pmd/issues/1300): \[core] PMD stops processing file completely, if one rule in a rule chain fails
+    *   [#1317](https://github.com/pmd/pmd/issues/1317): \[ci] Coveralls hasn't built the project since June 25th
+*   java-bestpractices
+    *   [#940](https://github.com/pmd/pmd/issues/940): \[java] JUnit 4 false positives for JUnit 5 tests
+    *   [#1267](https://github.com/pmd/pmd/pull/1267): \[java] MissingOverrideRule: Avoid NoClassDefFoundError with incomplete classpath
+    *   [#1323](https://github.com/pmd/pmd/issues/1323): \[java] AvoidUsingHardCodedIP ignores match pattern
+    *   [#1327](https://github.com/pmd/pmd/pull/1327): \[java] AvoidUsingHardCodedIP false positive for ":bee"
+*   java-codestyle
+    *   [#1255](https://github.com/pmd/pmd/issues/1255): \[java] UnnecessaryFullyQualifiedName false positive: static method on shadowed implicitly imported class
+    *   [#1258](https://github.com/pmd/pmd/issues/1285): \[java] False positive "UselessParentheses" for parentheses that contain assignment
+*   java-errorprone
+    *   [#1078](https://github.com/pmd/pmd/issues/1078): \[java] MissingSerialVersionUID rule does not seem to catch inherited classes
+*   java-performance
+    *   [#1291](https://github.com/pmd/pmd/issues/1291): \[java] InvalidSlf4jMessageFormat false positive: too many arguments with string concatenation operator
+    *   [#1298](https://github.com/pmd/pmd/issues/1298): \[java] RedundantFieldInitializer - NumberFormatException with Long
+*   jsp
+    *   [#1274](https://github.com/pmd/pmd/issues/1274): \[jsp] Support EL in tag attributes
+    *   [#1276](https://github.com/pmd/pmd/issues/1276): \[jsp] add support for jspf and tag extensions
+*   plsql
+    *   [#681](https://github.com/pmd/pmd/issues/681): \[plsql] Parse error with Cursor For Loop
+
+### API Changes
+
+*   All classes in the package `net.sourceforge.pmd.lang.dfa.report` have been deprecated and will be removed
+    with PMD 7.0.0. This includes the class `net.sourceforge.pmd.lang.dfa.report.ReportTree`. The reason is,
+    that this class is very specific to Java and not suitable for other languages. It has only been used for
+    `YAHTMLRenderer`, which has been rewritten to work without these classes.
+    
+*   The nodes RUNSIGNEDSHIFT and RSIGNEDSHIFT are deprecated and will be removed from the AST with PMD 7.0.0.
+    These represented the operator of ShiftExpression in two cases out of three, but they're not needed and
+    make ShiftExpression inconsistent. The operator of a ShiftExpression is now accessible through
+    ShiftExpression#getOperator.
+
+### External Contributions
+
+*   [#109](https://github.com/pmd/pmd/pull/109): \[java] Add two linguistics rules under naming - [Arda Aslan](https://github.com/ardaasln)
+*   [#1254](https://github.com/pmd/pmd/pull/1254): \[ci] \[GSoC] Integrating the danger and pmdtester to travis CI - [BBG](https://github.com/djydewang)
+*   [#1258](https://github.com/pmd/pmd/pull/1258): \[java] Use typeof in MissingSerialVersionUID - [krichter722](https://github.com/krichter722)
+*   [#1264](https://github.com/pmd/pmd/pull/1264): \[cpp] Fix NullPointerException in CPPTokenizer:99 - [Rafael Cortês](https://github.com/mrfyda)
+*   [#1277](https://github.com/pmd/pmd/pull/1277): \[jsp] #1276 add support for jspf and tag extensions - [Jordi Llach](https://github.com/jordillachmrf)
+*   [#1275](https://github.com/pmd/pmd/pull/1275): \[jsp] Issue #1274 - Support EL in tag attributes - [Jordi Llach](https://github.com/jordillachmrf)
+*   [#1278](https://github.com/pmd/pmd/pull/1278): \[ci] \[GSoC] Use pmdtester 1.0.0.pre.beta3 - [BBG](https://github.com/djydewang)
+*   [#1289](https://github.com/pmd/pmd/pull/1289): \[java] UselessParentheses: Fix false positive with assignments - [cobratbq](https://github.com/cobratbq)
+*   [#1290](https://github.com/pmd/pmd/pull/1290): \[docs] \[GSoC] Create the documentation about pmdtester - [BBG](https://github.com/djydewang)
+*   [#1256](https://github.com/pmd/pmd/pull/1256): \[java] #940 Avoid JUnit 4 false positives for JUnit 5 tests - [Alex Shesterov](https://github.com/vovkss)
+*   [#1315](https://github.com/pmd/pmd/pull/1315): \[apex] Add OneDeclarationPerStatement rule - [Jeff Hube](https://github.com/jeffhube) 
+
+
 ## 29-July-2018 - 6.6.0
 
 The PMD team is pleased to announce PMD 6.6.0.

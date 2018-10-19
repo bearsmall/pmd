@@ -30,7 +30,8 @@ TRAVIS_COMMIT_RANGE=${TRAVIS_COMMIT_RANGE}"
 function upload_baseline() {
     log_info "Generating and uploading baseline for pmdtester..."
     cd ..
-    pmdtester -m single -r ./pmd -p ${TRAVIS_BRANCH} -pc ./pmd/.travis/all-java.xml -l ./pmd/.travis/project-list.xml -f
+    bundle config --local gemfile pmd/Gemfile
+    bundle exec pmdtester -m single -r ./pmd -p ${TRAVIS_BRANCH} -pc ./pmd/.travis/all-java.xml -l ./pmd/.travis/project-list.xml -f
     cd target/reports
     BRANCH_FILENAME="${TRAVIS_BRANCH/\//_}"
     zip -q -r ${BRANCH_FILENAME}-baseline.zip ${BRANCH_FILENAME}/
@@ -48,7 +49,12 @@ log_info "Building PMD ${VERSION} on branch ${TRAVIS_BRANCH}"
 
 MVN_BUILD_FLAGS="-B -V"
 
-if travis_isPullRequest; then
+if travis_isOSX; then
+
+    log_info "The build is running on OSX"
+    ./mvnw verify $MVN_BUILD_FLAGS
+
+elif travis_isPullRequest; then
 
     log_info "This is a pull-request build"
     ./mvnw verify $MVN_BUILD_FLAGS
