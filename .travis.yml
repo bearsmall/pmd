@@ -69,7 +69,7 @@ deploy:
   skip_cleanup: true
   on:
     tags: true
-    repo: pmd/pmd
+    repo: bearsmall/pmd
     condition: "${TRAVIS_SECURE_ENV_VARS} = true && ${BUILD} != sonar && ${BUILD} != coveralls"
 after_deploy: bash .travis/release.sh
 

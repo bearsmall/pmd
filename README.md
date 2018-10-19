@@ -1,9 +1,9 @@
 # PMD
 
-[![Join the chat at https://gitter.im/pmd/pmd](https://badges.gitter.im/pmd/pmd.svg)](https://gitter.im/pmd/pmd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.org/pmd/pmd.svg?branch=master)](https://travis-ci.org/pmd/pmd)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sourceforge.pmd/pmd/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sourceforge.pmd/pmd)
-[![Coverage Status](https://coveralls.io/repos/github/pmd/pmd/badge.svg)](https://coveralls.io/github/pmd/pmd)
+[![Join the chat at https://gitter.im/bearsmall/pmd](https://badges.gitter.im/bearsmall/pmd.svg)](https://gitter.im/bearsmall/pmd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/bearsmall/pmd.svg?branch=master)](https://travis-ci.org/bearsmall/pmd)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.sourceforge.bearsmall/pmd/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.sourceforge.bearsmall/pmd)
+[![Coverage Status](https://coveralls.io/repos/github/bearsmall/pmd/badge.svg)](https://coveralls.io/github/bearsmall/pmd)
 
 ## About
 
@@ -17,7 +17,7 @@ Salesforce.com Apex, Perl, Swift, Matlab, Python.
 
 ## Source and Documentation
 
-Our latest source of PMD can be found on [GitHub](https://github.com/pmd/pmd). Fork us!
+Our latest source of PMD can be found on [GitHub](https://github.com/bearsmall/pmd). Fork us!
 
 *   [How to build PMD](BUILDING.md)
 *   [How to contribute to PMD](CONTRIBUTING.md)
